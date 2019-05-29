@@ -1,0 +1,121 @@
+---
+- name: Deploy Lamp server
+#  hosts: "{{ vmweb }}"
+  hosts: all
+  become: yes
+  become_method: sudo
+  vars:
+    vmweb: "{{ ansible_hostname }}"
+
+  tasks:
+    - name: Include web and db vars
+      include_vars: vars/lamp-var-all.yml
+
+    - name: Include subscription attachment tasks
+      include: tasks/task-attach-access-rh.yml
+
+
+    - name: Install Web packages
+      yum:
+        name: "{{ item }}"
+        state: present
+      with_items: "{{ web_packages }}"
+
+    - name: Install Index page
+      template:
+        src: "{{ index_src }}"
+        dest: /var/www/html/index.php
+        backup: yes
+
+    - name: Install application
+      copy:
+        src: "{{ item }}"
+        dest: /var/www/html
+      with_fileglob:
+              - ../files/fonts/
+              - ../files/*
+
+    - name: Activate firewalld
+      service:
+        name: firewalld
+        enabled: yes
+        state: started
+
+    - name: Open firewall ports
+      firewalld:
+        state: enabled
+        zone: public
+        immediate: true
+        service: "{{ item }}"
+        permanent: true
+      with_items: "{{ firewall_services_web }}"
+
+    - name: Configure SELinux
+      seboolean:
+        state: yes
+        name: httpd_can_network_connect
+        persistent: yes
+
+    - name: Activate httpd
+      service:
+        name: httpd
+        enabled: yes
+        state: started
+
+    - name: Check web server reachability
+      uri:
+        url: "http://{{ ansible_ssh_host }}"
+        status_code: 200
+      ignore_errors: yes
+
+    - name: Check DB libs
+      yum:
+        name: "{{ lib_db }}"
+        state: present
+
+    - name: Install db packages
+      yum:
+        name: "{{ item }}"
+        state: present
+      with_items: "{{ db_packages }}"
+
+    - name: Activate firewalld
+      service:
+        name: firewalld
+        enabled: yes
+        state: started
+
+    - name: Open firewall ports
+      firewalld:
+        state: enabled
+        zone: public
+        immediate: true
+        service: "{{ item }}"
+        permanent: true
+      with_items: "{{ firewall_services_db }}"
+
+    - name: Configure MariaDB
+      template:
+        src: "{{ networkcnf_src }}"
+        dest: /etc/my.cnf.d/network.cnf
+        backup: yes
+
+    - name: Activate MariaDB
+      service:
+        name: mariadb
+        enabled: yes
+        state: started
+
+    - name: Create DB
+      mysql_db:
+        name: '{{ dbname }}'
+        encoding: utf8
+        state: present
+
+    - name: Create DB users
+      mysql_user:
+        name: '{{ dbuser }}'
+        state: present
+        host: '%'
+        password: '{{ dbpass }}'
+        priv: '*.*:ALL'

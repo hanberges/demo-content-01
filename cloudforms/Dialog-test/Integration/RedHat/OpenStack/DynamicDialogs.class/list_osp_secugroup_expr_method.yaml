@@ -1,0 +1,12 @@
+---
+object_type: instance
+version: 1.0
+object:
+  attributes:
+    display_name: list_osp_secugroup_expr_method
+    name: list_osp_secugroup_expr_method
+    inherits: 
+    description: list_osp_secugroup_expr_method
+  fields:
+  - execute:
+      value: list_osp_secugroup_expr_method

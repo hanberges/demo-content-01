@@ -1,0 +1,46 @@
+---
+object_type: method
+version: 1.0
+object:
+  attributes:
+    name: list_osp_project_expr_method
+    display_name: list_osp_project_expr_method
+    description: 
+    scope: instance
+    language: ruby
+    location: expression
+    data: |
+      ---
+      :db: CloudTenant
+      :expression:
+        and:
+        - IS NOT NULL:
+            field: CloudTenant-name
+            value: ''
+          :token: 1
+        - "=":
+            field: CloudTenant.ext_management_system-id
+            value: '99000000000018'
+          :token: 2
+    options: {}
+  inputs:
+  - field:
+      aetype: 
+      name: key
+      display_name: 
+      datatype: 
+      priority: 1
+      owner: 
+      default_value: name
+      substitute: false
+      message: create
+      visibility: 
+      collect: 
+      scope: 
+      description: 
+      condition: 
+      on_entry: 
+      on_exit: 
+      on_error: 
+      max_retries: 
+      max_time: 

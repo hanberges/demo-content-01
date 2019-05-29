@@ -1,0 +1,20 @@
+---
+object_type: method
+version: 1.0
+object:
+  attributes:
+    name: list_osp_keypair_expr_method
+    display_name: list_osp_keypair_expr_method
+    description: 
+    scope: instance
+    language: ruby
+    location: expression
+    data: |
+      ---
+      :db: ManageIQ::Providers::CloudManager
+      :expression:
+        CONTAINS:
+          field: ManageIQ::Providers::CloudManager.key_pairs-name
+          value: "*"
+    options: {}
+  inputs: []

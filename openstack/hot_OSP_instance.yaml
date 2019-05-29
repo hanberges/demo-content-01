@@ -1,0 +1,55 @@
+heat_template_version: 2016-04-08
+
+description: Deployment of a single compute instance
+
+parameters:
+  projectname:
+    description: Project for the instance
+    type: string
+    default: admin
+  vmname:
+    description: Name of the instance
+    type: string
+    default: instance001
+  key_name:
+    description: Name of key-pair to be used for compute instance
+    type: string
+    default: testkeypair01
+  image_id:
+    description: Image to be used for compute instance
+    type: string
+    default: rhel-server-7.5-x86_64-kvm
+  flavor_id:
+    description: Type of instance (flavor) to be used
+    type: string
+    default: m1.medium
+  secgroup:
+    type: string
+    description: security group (Default)
+    default: default
+  net_pub:
+    type: string
+    description: Public network net id
+    default: 37a89b77-f084-4440-a996-b2bc90496f2c
+  net_priv:
+    type: string
+    description: Public network net id
+    default: 3b16e7ae-183c-4fcd-bc01-fbe5deca7385
+
+resources:
+  port_pub:
+    type: OS::Neutron::Port
+    properties:
+      port_security_enabled: False
+      network: { get_param: net_pub }
+
+  my_instance:
+    type: OS::Nova::Server
+    properties:
+      name: { get_param: vmname }
+      key_name: { get_param: key_name }
+      image: { get_param: image_id }
+      flavor: { get_param: flavor_id }
+      networks:
+        - { port: { get_resource: port_pub} }
+        - { port: { get_resource: port_priv} }
